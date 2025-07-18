@@ -340,6 +340,9 @@ enum ProductFields: Hashable {
             ingredients = Array(ingredients.prefix(2))
             ingredients = ingredients.map({ _ in "" })
             isFinished = false
+            pickerItem = nil
+            productImg = nil
+            photoData = nil
         }
     }
 

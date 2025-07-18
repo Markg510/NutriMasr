@@ -59,14 +59,14 @@ struct HomeView: View {
     
     var body: some View {
         NavigationStack(path: $gvm.path) {
-            ScrollView {
+            ScrollView(showsIndicators: false) {
                 VStack {
                     header()
                     
                     scanNow()
                     
-                    mostScanned()
-                    
+                    leaderboard()
+                                        
                     categories()
                     
                     Button("Add New Product") {
@@ -152,43 +152,38 @@ struct HomeView: View {
     }
     
     @ViewBuilder
-    func mostScanned() -> some View {
-        if !vm.hideMostScanned {
-            HStack {
-                
-                Spacer()
-                
-                Button {
-                    
-                } label: {
-                    Label("More", systemImage: "arrow.right.circle")
-                        .font(.footnote)
-                        .foregroundStyle(.accent)
-                        .labelStyle(.trailingIcon)
-                }
-            }
+    func leaderboard() -> some View {
+        if !vm.mostScannedProducts.isEmpty {
+            Text("Most Scanned")
+                .appTitle()
             
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 12) {
-                    if vm.mostScannedProducts.isEmpty {
-                        ForEach(0..<2, id:\.self) { i in
-                            MostScannedItem(product: Constants.sampleProduct, placeholder: true)
-                                .overlay { LoadingView(.rect(cornerRadius: 16)) }
-                                .padding(.leading, i == 0 ? 16 : -8)
-                                .padding(.leading, 8)
+            GroupBox {
+                VStack {
+                    let maxScanCount = vm.mostScannedProducts.max(by: {
+                        ($0.scans ?? 0) < ($1.scans ?? 0)
+                    })?.scans ?? 0
+                    
+                    ForEach(vm.mostScannedProducts) { product in
+                        HStack {
+                            CustomImage(url: product.getImgURL())
+                                .frame(width: 45, height: 65)
+                                .padding(10)
+                                .background(.colorBackground)
+                                .clipShape(.circle)
+                                .shadow(radius: 1, x: 1, y: 1)
+                                
+                            ProgressView(value: Double(product.scans ?? 0), total: Double(maxScanCount))
+                                .scaleEffect(x: 1, y: 3, anchor: .center)
+                            
+                            Text("\(product.scans ?? 0) \(product.scans == 1 ? "scan" : "scans")")
+                                .font(.caption)
+                                .foregroundStyle(.colorTextTertiary)
                         }
-                    } else {
-                        ForEach(vm.mostScannedProducts) { product in
-                            Button {
-                                currentProduct = product
-                            } label: {
-                                MostScannedItem(product: product)
-                            }
-                        }.scrollTargetLayout()
+                        
                     }
-                }.padding(.bottom)
-                    .scrollTargetBehavior(.viewAligned)
-            }.padding(.horizontal, -16)
+                }
+            }.groupBoxStyle(.customStyle)
+                .padding(.bottom)
         }
     }
     

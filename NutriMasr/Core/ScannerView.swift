@@ -80,7 +80,8 @@ struct ScannerView: View {
                         shouldNavigate = true
                     }
                 }.onChange(of: passed_barcode_value) {
-                    gvm.path.append(barcode_value)
+//                    gvm.path.append(barcode_value)
+                    dismiss()
                 }
                 .navigationDestination(isPresented: $shouldNavigate) {
                     ProductDetailsView(barcode: barcode_value)
