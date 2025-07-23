@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum SupaDatabaseErrors: Error {
+enum SupaDatabaseErrors: Error, Equatable {
     case noInternet
     case unauthorized        // 401
     case forbidden           // 403

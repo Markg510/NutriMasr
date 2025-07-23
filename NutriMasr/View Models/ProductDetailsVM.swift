@@ -5,7 +5,7 @@
 //  Created by Mark George on 22/06/2025.
 //
 
-import SwiftUI
+import Foundation
 import Supabase
 
 @Observable class ProductDetailsVM {
@@ -15,6 +15,7 @@ import Supabase
     var alertMessage = ""
     var showErrorAlert = false
     var isLoading = false
+    var discardedValue = false
     
     /// Calculates calorie information either per serving or per 100g based on user preference.
     /// - Parameters:
@@ -29,12 +30,12 @@ import Supabase
         return (result * 10).rounded() / 10
     }
     
-    func handleFetchingProduct(from barcode: String, overriding passedProduct: Binding<Product>) {
+    func handleFetchingProduct(from barcode: String) {
         isLoading = true
         Task {
             switch await fetchProduct(from: barcode) {
             case .success(let product):
-                passedProduct.wrappedValue = product
+                self.product = product
                 isLoading = false
                 await updateScanCount(id: barcode, scans: product.scans)
             case .failure(let err):
@@ -114,7 +115,7 @@ import Supabase
     
     func updateScanCount(id: String, scans: Int?) async {
         guard let scans = scans else { print("no scans"); return }
-        print(id)
+        
         do {
             try await Constants.client
               .from("products")

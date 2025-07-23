@@ -42,7 +42,6 @@ struct BarcodeScanner: UIViewControllerRepresentable {
         }
         
         func dataScanner(_ dataScanner: DataScannerViewController, didTapOn item: RecognizedItem) {
-            //ToDo
             switch item {
             case .barcode(let barcode):
                 if let payload = barcode.payloadStringValue {

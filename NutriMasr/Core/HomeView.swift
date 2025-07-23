@@ -83,7 +83,7 @@ struct HomeView: View {
                     ProductDetailsView(product: product)
                         .environment(gvm)
                 }.sheet(isPresented: $showScannerView) {
-                    ScannerView(scannedCodeOption: .scanned, passed_barcode_value: .constant(nil), updateScannedCount: true)
+                    ScannerView(scannedCodeOption: .scanned, passed_barcode_value: .constant(""))
                         .environment(gvm)
                 }.navigationDestination(for: String.self) { str in
                     if str == "AddProduct" {
@@ -98,10 +98,12 @@ struct HomeView: View {
                 }.onAppear {
                     vm.handleFetchingMostScannedProducts()
                     if !Calendar.current.isDateInToday(lastScannedDate) {
-                        print("called")
                         todayScannedCount = 0
                         lastScannedDate = .now
                     }
+                }.navigationDestination(for: Product.self) { product in
+                    ProductDetailsView(product: product)
+                        .environment(gvm)
                 }
         }.preferredColorScheme(.light)
     }
@@ -164,20 +166,22 @@ struct HomeView: View {
                     })?.scans ?? 0
                     
                     ForEach(vm.mostScannedProducts) { product in
-                        HStack {
-                            CustomImage(url: product.getImgURL())
-                                .frame(width: 45, height: 65)
-                                .padding(10)
-                                .background(.colorBackground)
-                                .clipShape(.circle)
-                                .shadow(radius: 1, x: 1, y: 1)
+                        Button { gvm.path.append(product) } label: {
+                            HStack {
+                                CustomImage(url: product.getImgURL())
+                                    .frame(width: 45, height: 65)
+                                    .padding(10)
+                                    .background(.colorBackground)
+                                    .clipShape(.circle)
+                                    .shadow(radius: 1, x: 1, y: 1)
+                                    
+                                ProgressView(value: Double(product.scans ?? 0), total: Double(maxScanCount))
+                                    .scaleEffect(x: 1, y: 3, anchor: .center)
                                 
-                            ProgressView(value: Double(product.scans ?? 0), total: Double(maxScanCount))
-                                .scaleEffect(x: 1, y: 3, anchor: .center)
-                            
-                            Text("\(product.scans ?? 0) \(product.scans == 1 ? "scan" : "scans")")
-                                .font(.caption)
-                                .foregroundStyle(.colorTextTertiary)
+                                Text("\(product.scans ?? 0) \(product.scans == 1 ? "scan" : "scans")")
+                                    .font(.caption)
+                                    .foregroundStyle(.colorTextTertiary)
+                            }
                         }
                         
                     }
@@ -211,7 +215,7 @@ struct HomeView: View {
                 .aspectRatio(contentMode: .fit)
                 .frame(width: 70, height: 70)
                 .padding(4)
-                .background(.white)
+                .background(.colorPrimary)
                 .clipShape(.rect(cornerRadius: 16))
                 .shadow(radius: 2, x: 1, y: 1)
             

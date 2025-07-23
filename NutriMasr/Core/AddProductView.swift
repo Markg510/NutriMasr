@@ -63,8 +63,15 @@ struct AddProductView: View {
                         vm.showScanningSheet = true
                     }
                 } else {
-                    Button("Ok", role: .cancel) { }
+                    if vm.showTryAgain {
+                        Button("Try Again", role: .cancel) {
+                            vm.handleAddingProduct()
+                        }
+                    }
+                    
+                    Button("Ok", role: vm.showTryAgain ? .destructive : .cancel) {}
                 }
+                
             } message: {
                 Text(vm.alertMessage)
             }.scrollDismissesKeyboard(.immediately)      

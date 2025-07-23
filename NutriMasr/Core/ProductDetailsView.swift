@@ -11,56 +11,50 @@ struct ProductDetailsView: View {
     @Environment(GeneralVM.self) var gvm
     @Environment(\.dismiss) var dismiss
     
-    @State private var showFactsPer: CustomSegmentedPickerOptions = .serving
+    @AppStorage("todayScannedCount") private var todayScannedCount: Int = 0
+    @AppStorage("lastScannedDate") private var lastScannedDate: Date = .now
     
+    @State private var showFactsPer: CustomSegmentedPickerOptions = .serving
     @State private var vm = ProductDetailsVM()
     
-    var passed_product: Product = Constants.emptyProduct
+    var passed_product: Product? = nil
     var barcode: String? = nil
+    let increaseScans: Bool
         
-    init(product: Product, barcode: String? = nil) {
+    init(product: Product, increaseScans: Bool = false) {
         UISegmentedControl.appearance().selectedSegmentTintColor = .accent
         UISegmentedControl.appearance().setTitleTextAttributes([.foregroundColor: UIColor.white], for: .selected)
         
         self.passed_product = product
-        self.barcode = barcode
+        self.barcode = nil
+        self.increaseScans = increaseScans
     }
     
-    init(barcode: String? = nil) {
+    init(barcode: String? = nil, increaseScans: Bool = false) {
         UISegmentedControl.appearance().selectedSegmentTintColor = .accent
         UISegmentedControl.appearance().setTitleTextAttributes([.foregroundColor: UIColor.white], for: .selected)
         
-        self.passed_product = Constants.emptyProduct
+        self.passed_product = nil
         self.barcode = barcode
+        self.increaseScans = increaseScans
     }
     
     var body: some View {
         @Bindable var dVM = vm
         ScrollView(showsIndicators: false) {
             VStack {
-                Picker("Serving Of", selection: $showFactsPer) {
-                    Text("Serving").tag(CustomSegmentedPickerOptions.serving)
-                    Text("100g").tag(passed_product.category == .drinks ? CustomSegmentedPickerOptions.hundredMills : CustomSegmentedPickerOptions.hundredGrams)
-                }.pickerStyle(.segmented)
-                    .padding(.bottom)
-                
                 header()
                 
-                Divider()
-                
-                proteinAndNutrients()
-                
-                ingredients()
+                nutritionalFacts()
                 
                 Label("All data shown is taken from the vm.product label. We rely on what’s printed by the manufacturer.", systemImage: "i.circle")
                     .font(.caption)
                     .foregroundStyle(.colorTextTertiary)
-                
-                Text(vm.alertTitle)
+                    .padding(.top)
             }
-        }.padding()
-            .background(.colorBackground)
-            .navigationTitle(passed_product.name ?? "")
+        }.background(.colorBackground)
+            .navigationTitle(vm.product.name ?? "")
+            .navigationBarTitleDisplayMode(.large)
             .foregroundStyle(.colorTextPrimary)
             .groupBoxStyle(.customStyle)
             .ignoresSafeArea(edges: [.bottom])
@@ -78,7 +72,6 @@ struct ProductDetailsView: View {
                         } else {
                             dismiss()
                         }
-                        
                     }
                 } else {
                     Button("Ok", role: .cancel) { }
@@ -86,116 +79,117 @@ struct ProductDetailsView: View {
                 
             }.onChange(of: vm.showErrorAlert) {
                 gvm.shouldHideCamera = vm.showErrorAlert
-            }.animation(.easeInOut, value: showFactsPer)
-            .animation(.easeInOut, value: vm.product)
+            }
+            .animation(.easeInOut, value: barcode != nil ? vm.product : Constants.sampleProduct)
             .contentTransition(.numericText())
             .onAppear {
-                vm.product = passed_product
+                if increaseScans && Calendar.current.isDateInToday(lastScannedDate) {
+                          todayScannedCount += 1
+                }
                 
-                guard let barcode = barcode else { return }
-                vm.handleFetchingProduct(from: barcode, overriding: $dVM.product)
+                guard let barcode = barcode else {
+                    vm.product = passed_product!
+                    return
+                }
+
+                vm.handleFetchingProduct(from: barcode)
             }
     }
     
     @ViewBuilder
-    func header() -> some View {
-        @Bindable var dVM = vm
+    func header() -> some View {        
+        Group {
+            HStack {
+                Label("Calories:", systemImage: "flame.fill")
+                    .foregroundStyle(.colorTextTertiary)
+                    .fontWeight(.medium)
+                
+                Text("\(vm.product.caloriesPer100g == nil ? "-" : String(vm.product.caloriesPer100g!)) kcal")
+                    .foregroundStyle(.colorTextTertiary)
+            }.padding(.leading)
+                .padding(.leading)
+            
+            HStack {
+                Label("Serving:", systemImage: "scalemass.fill")
+                    .foregroundStyle(.colorTextTertiary)
+                    .fontWeight(.medium)
+                
+                Text("\(vm.product.weight == nil ? "-" : String(vm.product.weight!)) kcal")
+                    .foregroundStyle(.colorTextTertiary)
+            }.padding(.leading)
+                .padding(.leading)
+            
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack {
+                    if let ingredients = vm.product.ingredients {
+                        ForEach(Array(ingredients.enumerated()), id: \.offset) { pos, ingredient in
+                            Text(ingredient)
+                                .padding(4)
+                                .background(.white)
+                                .clipShape(.rect(cornerRadius: 4))
+                                .shadow(radius: 0.5, x: 0.5, y: 0.5)
+                                .foregroundStyle(.colorTextTertiary)
+                                .padding(.bottom, 1)
+                                .padding(.leading, pos == 0 ? 32 : 0)
+                        }
+                    }
+                }
+            }
+            
+            Label("Nutritional Facts are shown per serving", systemImage: "i.circle")
+                .font(.caption)
+                .foregroundStyle(.colorTextTertiary)
+                .padding(.leading)
+                .padding(.top, 8)
+                .padding(.bottom, 25)
+                .padding(.leading)
+        }.frame(maxWidth: .infinity, alignment: .leading)
+    }
+    
+    @ViewBuilder
+    func nutritionalFacts() -> some View {
         HStack {
-            Text("Calories")
-                .font(.title3)
+            Text("Nutritional Facts")
+                .foregroundStyle(.accent)
+                .font(.headline)
                 .fontWeight(.medium)
             
             Spacer()
             
-            let sodium = vm.calculateCalories(vm.product.caloriesPer100g, servingWeight: vm.product.weight, isPerServing: showFactsPer)
-            Text(String(format: "%.1f kcal", sodium))
-        }
+            if vm.isLoading {
+                ProgressView()
+            }
+        }.padding(.bottom, -2)
+            .padding(.horizontal)
         
+        Rectangle()
+            .fill(.accent)
+            .frame(height: 2.5)
+        
+        nutritionalFactItem("Protein", value: vm.product.protein)
+        nutritionalFactItem("Sodium", value: vm.product.sodium)
+        nutritionalFactItem("Sugars", value: vm.product.sugars)
+        nutritionalFactItem("Fiber", value: vm.product.fiber)
+        nutritionalFactItem("Fat", value: vm.product.fat)
+        nutritionalFactItem("Carbohydrates", value: vm.product.carbohydrates)
+    }
+    
+    @ViewBuilder
+    func nutritionalFactItem(_ title: String, value: Double?) -> some View {
         HStack {
-            Text("Net \(vm.product.category == .drinks ? "Liters" : "Weight")")
-                .font(.callout)
+            Text(title)
                 .foregroundStyle(.colorTextTertiary)
-            
-            Spacer()
-            
-            Text(String(format: "%.1fg", vm.product.weight ?? 0))
-                .foregroundStyle(.colorTextTertiary)
-        }
-    }
-    
-    @ViewBuilder
-    func proteinAndNutrients() -> some View {
-        Label("Proteins & Nutrients", systemImage: "i.circle")
-            .font(.title2)
-            .fontWeight(.medium)
-            .frame(maxWidth: .infinity, alignment: .leading)
-        
-        GroupBox {
-            let protein = vm.calculateCalories(vm.product.protein, servingWeight: vm.product.weight, isPerServing: showFactsPer)
-            HStack {
-                Text("• Protein")
-                Spacer()
-                Text(String(format: "%.1fg", protein))
-            }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                        
+            Text(value == nil ? "-" : String(format: "%.1fg", value!))
+                .frame(maxWidth: .infinity, alignment: .leading)
 
-            let sodium = vm.calculateCalories(vm.product.sodium, servingWeight: vm.product.weight, isPerServing: showFactsPer)
-            HStack {
-                Text("• Sodium")
-                Spacer()
-                Text(String(format: "%.1fg", sodium))
-            }
-
-            let sugars = vm.calculateCalories(vm.product.sugars, servingWeight: vm.product.weight, isPerServing: showFactsPer)
-            HStack {
-                Text("• Sugars")
-                Spacer()
-                Text(String(format: "%.1fg", sugars))
-            }
-
-            let fiber = vm.calculateCalories(vm.product.fiber, servingWeight: vm.product.weight, isPerServing: showFactsPer)
-            HStack {
-                Text("• Fiber")
-                Spacer()
-                Text(String(format: "%.1fg", fiber))
-            }
-
-            let fat = vm.calculateCalories(vm.product.fat, servingWeight: vm.product.weight, isPerServing: showFactsPer)
-            HStack {
-                Text("• Fat")
-                Spacer()
-                Text(String(format: "%.1fg", fat))
-            }
-
-            let carbohydrates = vm.calculateCalories(vm.product.carbohydrates, servingWeight: vm.product.weight, isPerServing: showFactsPer)
-            HStack {
-                Text("• Carbohydrates")
-                Spacer()
-                Text(String(format: "%.1fg", carbohydrates))
-            }
-        }
-    }
-    
-    @ViewBuilder
-    func ingredients() -> some View {
-        Label("Ingredients", systemImage: "list.bullet.clipboard")
-            .font(.title2)
-            .fontWeight(.medium)
-            .frame(maxWidth: .infinity, alignment: .leading)
-        
-        GroupBox {
-            VStack(alignment: .leading) {
-                if let ingredients = vm.product.ingredients {
-                    ForEach(ingredients, id:\.self) { ingredient in
-                        Text("• \(ingredient)")
-                    }
-                }
-            }.frame(maxWidth: .infinity, alignment: .leading)
-        }
+        }.padding(.horizontal)
     }
 }
 
 #Preview {
-    ProductDetailsView(product: Constants.sampleProduct)
+    ProductDetailsView(barcode: "90424014")
         .environment(GeneralVM())
 }
 

@@ -34,6 +34,7 @@ enum ProductFields: Hashable {
     var category: Categories? = nil
     var showOptions = false
     var isFinished = false
+    var showTryAgain = false
     
     var showPickerItem = false
     var pickerItem: PhotosPickerItem? = nil
@@ -54,6 +55,11 @@ enum ProductFields: Hashable {
             case .success():
                 handleAddingProductImg()
             case .failure(let err):
+                guard err != .alreadyExists else { print("should handle yastas"); handleAddingProductImg(); return }
+                showTryAgain = switch err {
+                    case .unknown, .serverError, .noInternet: true
+                    default: false
+                }
                 alertTitle = switch err {
                 case .noInternet:
                     "No Internet Connection!"
