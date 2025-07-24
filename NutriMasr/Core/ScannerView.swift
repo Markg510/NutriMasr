@@ -36,9 +36,6 @@ struct ScannerView: View {
                                 .fill(Color(.systemGray5))
                         } else {
                             BarcodeScanner(barcode_value: scannedCodeOption == .scanned ? $barcode_value : $passed_barcode_value)
-                                .onChange(of: barcode_value) { old, new in
-                                    print("old: \(old), new: \(new)")
-                                }
                         }
                     }.clipShape(.rect(cornerRadius: 16))
                  

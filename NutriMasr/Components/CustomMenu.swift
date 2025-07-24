@@ -35,7 +35,7 @@ struct CustomMenu: View {
                 if showOptions {
                     optionsMenu()
                 }
-            }.background(.white)
+            }.background(.colorPrimary)
                 .clipShape(.rect(cornerRadius: 16))
                 .shadow(radius: 2, x: 1, y: 1)
                 .padding(.bottom)

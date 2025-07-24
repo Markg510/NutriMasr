@@ -54,7 +54,6 @@ struct AddProductView: View {
             }
         }.background(.colorBackground)
             .foregroundStyle(.colorTextPrimary)
-            .preferredColorScheme(.light)
             .sheet(isPresented: $dVM.showScanningSheet) {
                 ScannerView(scannedCodeOption: .passed, passed_barcode_value: $dVM.barcode)
             }.alert(vm.alertTitle, isPresented: $dVM.showErrorAlert) {
@@ -103,7 +102,7 @@ struct AddProductView: View {
         
         TextField(placeholder, text: text)
             .padding(12)
-            .background(.white)
+            .background(.colorPrimary)
             .clipShape(.rect(cornerRadius: 16))
             .shadow(radius: 1, x: 1, y: 1)
             .padding(.bottom)
@@ -135,7 +134,7 @@ struct AddProductView: View {
                     .padding(24)
             }
         }.frame(width: 150, height: 150)
-            .background(.white)
+            .background(.colorPrimary)
             .clipShape(.circle)
             .shadow(radius: 1, x: 1, y: 1)
             .frame(maxWidth: .infinity, alignment: .center)

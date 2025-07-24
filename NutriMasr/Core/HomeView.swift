@@ -105,7 +105,7 @@ struct HomeView: View {
                     ProductDetailsView(product: product)
                         .environment(gvm)
                 }
-        }.preferredColorScheme(.light)
+        }
     }
     
     // MARK: -- VIEWS
@@ -147,7 +147,7 @@ struct HomeView: View {
             }
             
         }.padding()
-            .background(.white)
+            .background(.colorPrimary)
             .clipShape(.rect(cornerRadius: 16))
             .shadow(radius: 2, x: 1, y: 1)
             .padding(.bottom)
@@ -279,7 +279,7 @@ struct MostScannedItem: View {
             }.padding()
                 .padding(.leading, 40)
                 .opacity(placeholder ? 0 : 1)
-                .background(.white)
+                .background(.colorPrimary)
                 .clipShape(.rect(cornerRadius: 16))
             
 //            CustomImage(url: <#T##URL?#>)

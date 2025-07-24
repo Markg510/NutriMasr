@@ -11,7 +11,7 @@ struct LoadingView<S: Shape>: View {
     var shape: S
     var color: Color
     
-    init(_ shape: S, _ color: Color = .white) {
+    init(_ shape: S, _ color: Color = .colorPrimary) {
         self.shape = shape
         self.color = color
     }

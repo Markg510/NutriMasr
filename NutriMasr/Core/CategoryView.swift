@@ -70,7 +70,7 @@ struct CategoryView: View {
     func categoryItem(product: Product) -> some View {
         VStack(alignment: .center) {
             RoundedRectangle(cornerRadius: 16)
-                .fill(.white)
+                .fill(.colorPrimary)
                 .frame(width: 167, height: 167)
                 .shadow(radius: 1, x: 1, y: 1)
                 .overlay {

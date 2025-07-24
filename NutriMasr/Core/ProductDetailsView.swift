@@ -125,12 +125,13 @@ struct ProductDetailsView: View {
                         ForEach(Array(ingredients.enumerated()), id: \.offset) { pos, ingredient in
                             Text(ingredient)
                                 .padding(4)
-                                .background(.white)
+                                .background(.colorPrimary)
                                 .clipShape(.rect(cornerRadius: 4))
                                 .shadow(radius: 0.5, x: 0.5, y: 0.5)
                                 .foregroundStyle(.colorTextTertiary)
                                 .padding(.bottom, 1)
                                 .padding(.leading, pos == 0 ? 32 : 0)
+                                .padding(.trailing, pos == ingredients.count - 1 ? 16 : 0)
                         }
                     }
                 }
@@ -198,12 +199,13 @@ extension GroupBoxStyle where Self == CustomGroupBoxStyle {
 }
 
 struct CustomGroupBoxStyle: GroupBoxStyle {
+    @Environment(\.colorScheme) private var colorScheme
     func makeBody(configuration: Configuration) -> some View {
         VStack {
             configuration.content
                 .foregroundStyle(.colorTextTertiary)
         }.padding(12)
-            .background(.white)
+            .background(.colorPrimary)
             .clipShape(.rect(cornerRadius: 16))
             .shadow(radius: 2, x: 1, y: 1)
             .padding(.horizontal, 2)
