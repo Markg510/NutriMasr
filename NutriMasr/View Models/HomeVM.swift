@@ -17,6 +17,8 @@ import Supabase
     var showErrorAlert = false
     var isLoading = false
     
+    var showUserNameOverlay: Bool = false
+    
     func handleFetchingMostScannedProducts() {
         isLoading = true
         Task {

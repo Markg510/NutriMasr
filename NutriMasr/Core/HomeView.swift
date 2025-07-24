@@ -54,31 +54,41 @@ struct HomeView: View {
     // Scanned Items Count
     @AppStorage("todayScannedCount") private var todayScannedCount: Int = 0
     @AppStorage("lastScannedDate") private var lastScannedDate: Date = .now
+    @AppStorage("username") private var username: String = ""
     
     @State private var vm = HomeVM()
     
     var body: some View {
         NavigationStack(path: $gvm.path) {
-            ScrollView(showsIndicators: false) {
-                VStack {
-                    header()
+                ZStack(alignment: .bottom) {
+                    ScrollView(showsIndicators: false) {
+                        VStack {
+                            header()
+                            
+                            scanNow()
+                            
+                            leaderboard()
+                                                
+                            categories()
+                            
+                            Button("Add New Product") {
+                                gvm.path.append("AddProduct")
+                            }.foregroundStyle(.accent)
+                                .padding(.top)
+                            
+                            Spacer()
+                            
+                        }.padding()
+                            .foregroundStyle(.colorTextPrimary)
+                            .blur(radius: vm.showUserNameOverlay ? 3 : 0)
+                            .disabled(vm.showUserNameOverlay)
+                    }
                     
-                    scanNow()
-                    
-                    leaderboard()
-                                        
-                    categories()
-                    
-                    Button("Add New Product") {
-                        gvm.path.append("AddProduct")
-                    }.foregroundStyle(.accent)
-                        .padding(.top)
-                    
-                    Spacer()
-                    
-                }.padding()
-            }.background(.colorBackground)
-                .foregroundStyle(.colorTextPrimary)
+                    if vm.showUserNameOverlay {
+                        userNameOverlay()
+                            .zIndex(100)
+                    }
+                }.background(.colorBackground)
                 .sheet(item: $currentProduct) { product in
                     ProductDetailsView(product: product)
                         .environment(gvm)
@@ -96,6 +106,8 @@ struct HomeView: View {
                     CategoryView(category: category)
                         .environment(gvm)
                 }.onAppear {
+                    vm.showUserNameOverlay = username.isEmpty
+                    
                     vm.handleFetchingMostScannedProducts()
                     if !Calendar.current.isDateInToday(lastScannedDate) {
                         todayScannedCount = 0
@@ -117,7 +129,12 @@ struct HomeView: View {
             
             Spacer()
             
-            Text("John Doe")
+            Text(username)
+        }.contentShape(.rect)
+            .onTapGesture {
+            withAnimation {
+                vm.showUserNameOverlay = true
+            }
         }.padding(.bottom)
     }
     
@@ -222,6 +239,42 @@ struct HomeView: View {
             Text(title)
         }
     }
+    
+    @ViewBuilder
+    func userNameOverlay() ->  some View {
+        GroupBox {
+            Image(systemName: "person.circle.fill")
+                .font(.system(size: 60))
+                .foregroundStyle(.colorTextPrimary)
+                .padding()
+            
+            Text("Enter Your Name")
+                .appTitle(withSpacing: true)
+            
+            TextField("John Doe", text: $username)
+                .padding(12)
+                .background(.colorBackground)
+                .clipShape(.rect(cornerRadius: 16))
+                .shadow(radius: 1, x: 1, y: 1)
+                .padding(.bottom)
+            
+            Button {
+                withAnimation {
+                    vm.showUserNameOverlay = false
+                }
+            } label: {
+                Text("Save")
+                    .padding(.vertical, 10)
+                    .frame(maxWidth: .infinity)
+                    .background(.accent)
+                    .foregroundStyle(.colorBackground)
+                    .fontWeight(.bold)
+                    .clipShape(.rect(cornerRadius: 16))
+            }
+        }.padding(.horizontal)
+            .groupBoxStyle(.customStyle)
+            .transition(.move(edge: .bottom))
+    }
 }
 
 #Preview {
@@ -231,16 +284,22 @@ struct HomeView: View {
 // MARK: -- EXTENSIONS
 
 extension Text {
+    /// Styles the text as an app title.
+    ///
+    /// - Parameter withSpacing: aligns title to leading if set to true
+    /// - Returns:an app themed text title
     @ViewBuilder
     public func appTitle(withSpacing: Bool = false) -> some View {
         if withSpacing {
             self
                 .font(.title2)
                 .fontWeight(.semibold)
+                .foregroundStyle(.colorTextPrimary)
         } else {
             self
                 .font(.title2)
                 .fontWeight(.semibold)
+                .foregroundStyle(.colorTextPrimary)
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
@@ -259,39 +318,5 @@ struct TrailingIconLabelStyle: LabelStyle {
             
             configuration.icon
         }
-    }
-}
-
-struct MostScannedItem: View {
-    let product: Product
-    var placeholder = false
-    
-    var body: some View {
-        ZStack(alignment: .leading) {
-            VStack(alignment: .leading) {
-                Text(product.name ?? "Loading...")
-                    .fontWeight(.medium)
-                    .lineLimit(1)
-                
-                Text(String(format: "%.1f kcal", product.caloriesPer100g ?? 0))
-                    .foregroundStyle(.colorTextTertiary)
-                    .font(.footnote)
-            }.padding()
-                .padding(.leading, 40)
-                .opacity(placeholder ? 0 : 1)
-                .background(.colorPrimary)
-                .clipShape(.rect(cornerRadius: 16))
-            
-//            CustomImage(url: <#T##URL?#>)
-            Image(.moltoMagnum)
-                .resizable()
-                .frame(width: 42.5, height: 100)
-                .aspectRatio(contentMode: .fit)
-                .shadow(radius: 1, x: 1, y: 1)
-                .padding(.leading, 8)
-                .opacity(placeholder ? 0 : 1)
-        }.contentShape(.rect)
-            .shadow(radius: 1, x: 1, y: 1)
-            .padding(.vertical, placeholder ? -12 : 0)
     }
 }

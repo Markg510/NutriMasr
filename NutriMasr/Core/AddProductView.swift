@@ -91,32 +91,6 @@ struct AddProductView: View {
         }.padding(.bottom, 8)
     }
     
-    @ViewBuilder
-    func textField(_ placeholder: String, text: Binding<String>, fieldType: ProductFields?) -> some View {
-        if let fieldType, vm.causingErrorFields.contains(fieldType) {
-            Text("Empty Field!")
-                .foregroundStyle(.red)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.bottom, 4)
-        }
-        
-        TextField(placeholder, text: text)
-            .padding(12)
-            .background(.colorPrimary)
-            .clipShape(.rect(cornerRadius: 16))
-            .shadow(radius: 1, x: 1, y: 1)
-            .padding(.bottom)
-            .keyboardType({
-                return switch fieldType {
-                case .name, .ingredient:
-                    .default
-                default:
-                    .numbersAndPunctuation
-                }
-            }())
-            .submitLabel(fieldType == .ingredient(index: vm.ingredientsCount - 1) ? .done : .next)
-    }
-    
     // MARK: -- VIEWS
     @ViewBuilder
     func productImage() -> some View {
@@ -219,8 +193,13 @@ struct AddProductView: View {
         
         title("Product Name")
         
-        textField("Molto Magnum", text: $dVM.name, fieldType: .name)
-            .focused($focusField, equals: .name)
+        AppTextField(
+            placeholder: "Molto Magnum",
+            fieldType: .name,
+            causingErrorFields: vm.causingErrorFields,
+            ingredientsCount: vm.ingredientsCount,
+            text: $dVM.name
+        ).focused($focusField, equals: .name)
             .onSubmit { focusField = .calories }
     }
     
@@ -231,8 +210,13 @@ struct AddProductView: View {
             VStack(spacing: 0) {
                 title("Calories")
                 
-                textField("850", text: $dVM.calories, fieldType: .calories)
-                    .focused($focusField, equals: .calories)
+                AppTextField(
+                    placeholder: "150",
+                    fieldType: .calories,
+                    causingErrorFields: vm.causingErrorFields,
+                    ingredientsCount: vm.ingredientsCount,
+                    text: $dVM.calories
+                ).focused($focusField, equals: .calories)
                     .onSubmit {
                         withAnimation(.snappy) {
                             vm.showOptions = true
@@ -268,16 +252,26 @@ struct AddProductView: View {
             VStack(spacing: 0) {
                 title(vm.category == .drinks ? "Liters" : "Weight")
                 
-                textField("300", text: $dVM.weight, fieldType: .weight)
-                    .focused($focusField, equals: .weight)
+                AppTextField(
+                    placeholder: "300",
+                    fieldType: .weight,
+                    causingErrorFields: vm.causingErrorFields,
+                    ingredientsCount: vm.ingredientsCount,
+                    text: $dVM.weight
+                ).focused($focusField, equals: .weight)
                     .onSubmit { focusField = .fat }
             }
             
             VStack(spacing: 0) {
                 title("Fat")
                 
-                textField("6.5", text: $dVM.fat, fieldType: .fat)
-                    .focused($focusField, equals: .fat)
+                AppTextField(
+                    placeholder: "6.5",
+                    fieldType: .fat,
+                    causingErrorFields: vm.causingErrorFields,
+                    ingredientsCount: vm.ingredientsCount,
+                    text: $dVM.fat
+                ).focused($focusField, equals: .fat)
                     .onSubmit { focusField = .carbohydrates }
             }
         }
@@ -290,16 +284,26 @@ struct AddProductView: View {
             VStack(spacing: 0) {
                 title("Carbohydrates")
                 
-                textField("24.0", text: $dVM.carbohydrates, fieldType: .carbohydrates)
-                    .focused($focusField, equals: .carbohydrates)
+                AppTextField(
+                    placeholder: "24.0",
+                    fieldType: .carbohydrates,
+                    causingErrorFields: vm.causingErrorFields,
+                    ingredientsCount: vm.ingredientsCount,
+                    text: $dVM.carbohydrates
+                ).focused($focusField, equals: .carbohydrates)
                     .onSubmit { focusField = .sodium }
             }
             
             VStack(spacing: 0) {
                 title("Sodium")
                 
-                textField("6.5", text: $dVM.sodium, fieldType: .sodium)
-                    .focused($focusField, equals: .sodium)
+                AppTextField(
+                    placeholder: "6.5",
+                    fieldType: .sodium,
+                    causingErrorFields: vm.causingErrorFields,
+                    ingredientsCount: vm.ingredientsCount,
+                    text: $dVM.sodium
+                ).focused($focusField, equals: .sodium)
                     .onSubmit { focusField = .protein }
             }
         }
@@ -312,24 +316,39 @@ struct AddProductView: View {
             VStack(spacing: 0) {
                 title("Protein")
                 
-                textField("3.73", text: $dVM.protein, fieldType: .protein)
-                    .focused($focusField, equals: .protein)
+                AppTextField(
+                    placeholder: "3.73",
+                    fieldType: .protein,
+                    causingErrorFields: vm.causingErrorFields,
+                    ingredientsCount: vm.ingredientsCount,
+                    text: $dVM.protein
+                ).focused($focusField, equals: .protein)
                     .onSubmit { focusField = .sugars }
             }
             
             VStack(spacing: 0) {
                 title("Sugars")
                 
-                textField("102", text: $dVM.sugars, fieldType: .sugars)
-                    .focused($focusField, equals: .sugars)
+                AppTextField(
+                    placeholder: "102",
+                    fieldType: .sugars,
+                    causingErrorFields: vm.causingErrorFields,
+                    ingredientsCount: vm.ingredientsCount,
+                    text: $dVM.sugars
+                ).focused($focusField, equals: .sugars)
                     .onSubmit { focusField = .fiber }
             }
             
             VStack(spacing: 0) {
                 title("Fiber")
                 
-                textField("11.5", text: $dVM.fiber, fieldType: .fiber)
-                    .focused($focusField, equals: .fiber)
+                AppTextField(
+                    placeholder: "11.5",
+                    fieldType: .fiber,
+                    causingErrorFields: vm.causingErrorFields,
+                    ingredientsCount: vm.ingredientsCount,
+                    text: $dVM.fiber
+                ).focused($focusField, equals: .fiber)
                     .onSubmit { focusField = .ingredient(index: 0) }
             }
         }
@@ -365,8 +384,13 @@ struct AddProductView: View {
         }
         
         ForEach(1...vm.ingredientsCount, id:\.self) { i in
-            textField("Ingredient \(i)", text: $dVM.ingredients[i - 1], fieldType: .ingredient(index: i - 1))
-                .focused($focusField, equals: .ingredient(index: i - 1))
+            AppTextField(
+                placeholder: "Ingredient \(i)",
+                fieldType: .ingredient(index: i - 1),
+                causingErrorFields: vm.causingErrorFields,
+                ingredientsCount: vm.ingredientsCount,
+                text: $dVM.ingredients[i - 1]
+            ).focused($focusField, equals: .ingredient(index: i - 1))
                 .onSubmit {
                     if i < vm.ingredientsCount {
                         focusField = .ingredient(index: i)
