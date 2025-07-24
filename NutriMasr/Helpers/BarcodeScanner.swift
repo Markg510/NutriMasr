@@ -12,7 +12,8 @@ import VisionKit
 struct BarcodeScanner: UIViewControllerRepresentable {
     typealias UIViewControllerType = DataScannerViewController
     
-    @Binding var barcode_value: String?
+//    @Binding var barcode_value: String?
+    let tapped: (String) -> ()
     
     var scannerViewController: DataScannerViewController = DataScannerViewController(
         recognizedDataTypes: [.barcode()],
@@ -45,7 +46,8 @@ struct BarcodeScanner: UIViewControllerRepresentable {
             switch item {
             case .barcode(let barcode):
                 if let payload = barcode.payloadStringValue {
-                    parent.barcode_value = payload
+//                    parent.barcode_value = payload
+                    parent.tapped(payload)
                 } else {
                     print("⚠️ Barcode has no payload string value")
                 }
@@ -55,5 +57,9 @@ struct BarcodeScanner: UIViewControllerRepresentable {
         }
     }
     
-    func updateUIViewController(_ uiViewController: DataScannerViewController, context: Context) {}
+    func updateUIViewController(_ uiViewController: DataScannerViewController, context: Context) {
+        if !uiViewController.isScanning {
+            try? uiViewController.startScanning()
+        }
+    }
 }

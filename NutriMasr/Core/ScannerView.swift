@@ -35,7 +35,11 @@ struct ScannerView: View {
                             RoundedRectangle(cornerRadius: 16)
                                 .fill(Color(.systemGray5))
                         } else {
-                            BarcodeScanner(barcode_value: scannedCodeOption == .scanned ? $barcode_value : $passed_barcode_value)
+                            BarcodeScanner() { code in
+                                if !showEnterCodeManuallyAlert {
+                                    if scannedCodeOption == .scanned { path.append(code) } else { dismiss() }
+                                }
+                            }
                         }
                     }.clipShape(.rect(cornerRadius: 16))
                  
@@ -64,15 +68,6 @@ struct ScannerView: View {
                 }
             }.padding()
                 .background(.colorBackground)
-                .onChange(of: barcode_value) { old, new in
-                    if let code = barcode_value, !showEnterCodeManuallyAlert { // Alert isn't showing
-                        path.append(code)
-                    }
-                }.onChange(of: passed_barcode_value) {
-                    if !showEnterCodeManuallyAlert {
-                        dismiss()
-                    }
-                }
                 .alert("Enter Value", isPresented: $showEnterCodeManuallyAlert) {
                     let barcodeBinding: Binding<String> = {
                         if scannedCodeOption == .scanned {
