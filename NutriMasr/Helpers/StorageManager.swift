@@ -13,11 +13,7 @@ class StorageManager {
     
     let url = URL(string: "https://mucamaoukmepccwpubfm.supabase.co")!
     
-    let apiKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im11Y2FtYW91a21lcGNjd3B1YmZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTExMjY2MDgsImV4cCI6MjA2NjcwMjYwOH0.r8Cs0rML-e-z0-EPKXUf35-Q8cJ2StqYdTXnNQ5Vd8c"
-    
-    let secret = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im11Y2FtYW91a21lcGNjd3B1YmZtIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1MTEyNjYwOCwiZXhwIjoyMDY2NzAyNjA4fQ.GnfTcepW1LMfPVqSTLiCPgFoXaDvWMYKmJnef20E0fQ"
-    
-    lazy var client = SupabaseClient(supabaseURL: url, supabaseKey: apiKey).storage
+    lazy var client = SupabaseClient(supabaseURL: url, supabaseKey: Secrets.apiKey).storage
     
     func uploadProductImg(code: String, data: Data) async -> Result<Void, SupaStorageErrors> {
         let fileName = "\(code).webp"
