@@ -66,30 +66,26 @@ struct HomeView: View {
                             header()
                             
                             scanNow()
-                            
+
                             leaderboard()
                                                 
                             categories()
                             
-                            Button("Add New Product") {
-                                gvm.path.append("AddProduct")
-                            }.foregroundStyle(.accent)
-                                .padding(.top)
-                            
+                            addNewProduct()
+                        
                             Spacer()
                             
                         }.padding()
                             .foregroundStyle(.colorTextPrimary)
-                            .blur(radius: vm.showUserNameOverlay ? 3 : 0)
                             .disabled(vm.showUserNameOverlay)
                     }
-                    
-                    if vm.showUserNameOverlay {
-                        userNameOverlay()
-                            .zIndex(100)
-                    }
-                }.background(.colorBackground)
-                .sheet(item: $currentProduct) { product in
+                }
+                .background(.colorBackground)
+                .sheet(isPresented: $vm.showUserNameOverlay) {
+                    userNameOverlay()
+                        .presentationDetents([.height(280)])
+                        .interactiveDismissDisabled(vm.showUserNameOverlay)
+                }.sheet(item: $currentProduct) { product in
                     ProductDetailsView(product: product)
                         .environment(gvm)
                 }.sheet(isPresented: $showScannerView) {
@@ -221,7 +217,7 @@ struct HomeView: View {
                     categoryItem(img: category.img, title: String(describing: category).capitalized)
                 }
             }
-        }
+        }.padding(.bottom)
     }
     
     @ViewBuilder
@@ -242,7 +238,7 @@ struct HomeView: View {
     
     @ViewBuilder
     func userNameOverlay() ->  some View {
-        GroupBox {
+        VStack {
             Image(systemName: "person.circle.fill")
                 .font(.system(size: 60))
                 .foregroundStyle(.colorTextPrimary)
@@ -271,9 +267,25 @@ struct HomeView: View {
                     .fontWeight(.bold)
                     .clipShape(.rect(cornerRadius: 16))
             }
-        }.padding(.horizontal)
-            .groupBoxStyle(.customStyle)
-            .transition(.move(edge: .bottom))
+        }.padding()
+            .background(.colorPrimary)
+    }
+    
+    @ViewBuilder
+    func addNewProduct() -> some View {
+        Button {
+            gvm.path.append("AddProduct")
+        } label: {
+            Label("Add Product", systemImage: "plus.circle")
+                .font(.headline)
+//                .fontWeight(.medium)
+                .foregroundStyle(.colorPrimary)
+                .padding(.horizontal)
+                .padding(.horizontal)
+                .padding(.vertical, 12)
+                .background(.accent, in: .rect(cornerRadius: 16))
+                
+        }
     }
 }
 

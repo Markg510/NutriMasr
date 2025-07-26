@@ -40,7 +40,6 @@ struct ProductDetailsView: View {
     }
     
     var body: some View {
-        @Bindable var dVM = vm
         ScrollView(showsIndicators: false) {
             VStack {
                 header()
@@ -64,7 +63,7 @@ struct ProductDetailsView: View {
                         ProgressView()
                     }
                 }
-            }.alert(vm.alertTitle, isPresented: $dVM.showErrorAlert) {
+            }.alert(vm.alertTitle, isPresented: $vm.showErrorAlert) {
                 if vm.alertTitle == "Product not found in database." {
                     Button("Ok", role: .cancel) {
                         if !gvm.path.isEmpty {

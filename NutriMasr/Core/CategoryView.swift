@@ -58,7 +58,9 @@ struct CategoryView: View {
         }.background(.colorBackground)
             .navigationTitle(String(describing: category).capitalized)
             .sheet(item: $currentProduct) { product in
-                ProductDetailsView(product: product)
+                NavigationStack {
+                    ProductDetailsView(product: product)
+                }
             }.onAppear {
                 vm.handleFetchingCategories(category)
             }.alert(vm.alertTitle, isPresented: $dVM.showErrorAlert) {
