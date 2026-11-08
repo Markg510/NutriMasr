@@ -13,7 +13,10 @@ class StorageManager {
     
     let url = URL(string: "https://mucamaoukmepccwpubfm.supabase.co")!
     
-    lazy var client = SupabaseClient(supabaseURL: url, supabaseKey: Secrets.apiKey).storage
+    lazy var client = SupabaseClient(
+        supabaseURL: url,
+        supabaseKey: apiKey
+    ).storage
     
     func uploadProductImg(code: String, data: Data) async -> Result<Void, SupaStorageErrors> {
         let fileName = "\(code).webp"
@@ -66,6 +69,14 @@ class StorageManager {
             
             return .failure(.unknown(error.localizedDescription))
         }
+    }
+    
+    private var apiKey: String {
+        guard let apiKey = Bundle.main.object(forInfoDictionaryKey: "SendGridAPIKey") as? String else {
+            fatalError("API Key missing from Info.plist")
+        }
+        
+        return apiKey
     }
 }
 
